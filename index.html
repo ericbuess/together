@@ -37,13 +37,38 @@
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
     <!-- <script src="https://apis.google.com/js/platform.js" async defer></script> -->
-    <script src="https://apis.google.com/js/platform.js"></script>
+    <script src="https://unpkg.com/peerjs@1.0.0/dist/peerjs.min.js"></script>
     <script>
         'use strict';
-
-        const params = new URLSearchParams(window.location.search);  
+ 
+        const params = new URLSearchParams(window.location.search); 
         const sheetId = params.get("sheetId");
-        console.log("SheetId: " + sheetId)
+        const partnerPeerId = params.get("peerId");
+        var myPeerId = "";
+        console.log("sheetId: " + sheetId);
+        console.log("partnerPeerId: " + partnerPeerId);
+
+        var peer = new Peer();
+        peer.on('open', function(id) {
+            myPeerId = id;
+            console.log('myPeerId is: ' + myPeerId);
+        });
+
+        peer.on('connection', function(conn) {
+            conn.on('data', function(data){
+                // Will print 'hi!'
+                console.log(data);
+            });
+        });
+
+        if (partnerPeerId) {
+            var conn = peer.connect(partnerPeerId);
+            // on open will be launch when you successfully connect to PeerServer
+            conn.on('open', function() {
+                // here you have conn.id
+                conn.send('hi!');
+            });
+        }
 
         var playerNames = ["Player 1", "Player-2", "Player 3", "Player 4"];
         // var cards = ["Ella is awesome", "Marty the dancing penguin", "Take hike", "Elephants are small", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22"];

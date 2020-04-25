@@ -46,6 +46,7 @@
     </form>
     <!-- <div id="" -->
     <div id="question"></div>
+    <div id="answers"></div>
     <div id="players"></div>
     
     <!-- Optional JavaScript -->
@@ -98,6 +99,10 @@
             }
         });
 
+        function updateAnswers(player, answer) {
+            $("#answers").html(player + ": " + answer);
+        }
+
         function initConnection(conn) {
             var connectionAlreadyEstablished = false;
             for (var i=0; i<connections.length; i++) {
@@ -122,6 +127,9 @@
                 conn.on('data', function(data) {
                     // Will print 'hi!'
                     console.log('data received on connection ' + conn.connectionId + ' from peer ' + conn.peer + ': ', data);
+                    var answer = data.answer;
+                    var player = data.player;
+                    updateAnswers(player, answer);
                 });
                 conn.on('close', function() {
                     // Will print 'hi!'
@@ -284,8 +292,10 @@
                         console.log(card);
                         var conn = connections[0];
                         conn.send({
-                            strings: card
+                            answer: card,
+                            player: player.name
                         });
+                        updateAnswers(player.name, card);
                     });
                     cardContainerDOM.append(cardDIV);
                 }

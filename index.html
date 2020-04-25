@@ -27,10 +27,27 @@
   </head>
   <body>
     <h1>Together!</h1>
+    <!-- <div id="game-id"></div> -->
+    <form id="game-form">
+        <div>
+          Game ID: <h2 id="game-id"></h2>
+        </div>
+        <div class="form-group">
+          <label for="join-game-id">Game ID to Join</label>
+          <input type="text" class="form-control" id="join-game-id" aria-describedby="join-game-id-help" placeholder="Join Game ID">
+          <!-- <small id="join-game-id-help" class="form-text text-muted">Game ID for a friends game to join.</small> -->
+        </div>
+        <div class="form-group">
+          <label for="display-name">Display Name</label>
+          <input type="text" class="form-control" id="display-name" aria-describedby="display-name-help" placeholder="Display Name">
+          <!-- <small id="display-name-help" class="form-text text-muted">Name to display to others in the game.</small> -->
+        </div>
+        <button type="submit" id="game-form-submit" class="btn btn-primary disabled">Join Game</button>
+    </form>
+    <!-- <div id="" -->
     <div id="question"></div>
     <div id="players"></div>
     
-
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.5.0.min.js"   integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
@@ -43,34 +60,110 @@
  
         const params = new URLSearchParams(window.location.search); 
         const sheetId = params.get("sheetId");
-        const partnerPeerId = params.get("peerId");
+        // const partnerPeerId = params.get("peerId");
         var myPeerId = "";
+        // var partnerPeerId = "";
+        // var connectionID = "";
+        var connectionIds = [];
+        var connections = [];
+        var partnerIds = [];
         console.log("sheetId: " + sheetId);
-        console.log("partnerPeerId: " + partnerPeerId);
+
+        $("#game-form").submit(function(event) {
+            event.preventDefault();
+            var partnerPeerId = $("#join-game-id").val();
+            if (partnerPeerId != "") {
+                var conn = peer.connect(partnerPeerId);
+                // on open will be launch when you successfully connect to PeerServer
+                initConnection(conn);
+                // conn.on('open', function() {
+                //     // here you have conn.id
+                //     // conn.send('hi!');
+
+                //     // Receive messages
+                //     conn.on('data', function(data) {
+                //         console.log('Received', data);
+                //     });
+                //     // TODO: enable card buttons here
+                    
+                //     // Send messages
+                //     conn.send({
+                //         strings: 'hi!',
+                //         numbers: 150,
+                //         arrays: [1,2,3],
+                //         evenBinary: new Blob([1,2,3]),
+                //         andMore: {bool: true}
+                //     });
+                // });
+            }
+        });
+
+        function initConnection(conn) {
+            var connectionAlreadyEstablished = false;
+            for (var i=0; i<connections.length; i++) {
+                var connection = connections[i];
+                if (connection.connectionId == conn.connectionId) {
+                    connectionAlreadyEstablished = true;
+                    break;
+                }
+            }
+            if (!connectionAlreadyEstablished) {
+                // peer.connect(conn.peer);
+                connections.push(conn);
+                // initConnection(conn);
+                conn.on('open', function() {
+                    // Will print 'hi!'
+                    // partnerIds.push(conn.peer);
+                    // connectionIds.push(conn.connectionId);
+
+                    console.log('new data connection ' + conn.connectionId + ' opened with peer ' + conn.peer);
+                    
+                });
+                conn.on('data', function(data) {
+                    // Will print 'hi!'
+                    console.log('data received on connection ' + conn.connectionId + ' from peer ' + conn.peer + ': ', data);
+                });
+                conn.on('close', function() {
+                    // Will print 'hi!'
+                    console.log('data connection closed with connectionId ' + conn.connectionId + ' from peer ' + conn.peer);
+                });
+                conn.on('error', function(err){
+                    // Will print 'hi!'
+                    console.log('data connection error on connectionId ' + conn.connectionId + ' from peer ' + conn.peer + ': ', err);
+                });
+            }
+        }
 
         var peer = new Peer();
         peer.on('open', function(id) {
             myPeerId = id;
             console.log('myPeerId is: ' + myPeerId);
+            // var gameLink = window.location.origin + window.location.pathname + "?sheetId=" + sheetId + "&peerId=" + myPeerId;
+            var gameIdDOM = $("#game-id");
+            gameIdDOM.html('Game ID: ' + myPeerId);
+            $("#game-form-submit").removeClass("disabled");
         });
 
         peer.on('connection', function(conn) {
-            conn.on('data', function(data){
-                // Will print 'hi!'
-                console.log(data);
-            });
+            console.log('new connection ' + conn.connectionId + ' established with peer ' + conn.peer);
+            // connections.push(conn);
+            // peer.connect(conn.peer);
+            initConnection(conn);
+        });
+        
+        peer.on('close', function() {
+            console.log("closed");
         });
 
-        if (partnerPeerId) {
-            var conn = peer.connect(partnerPeerId);
-            // on open will be launch when you successfully connect to PeerServer
-            conn.on('open', function() {
-                // here you have conn.id
-                conn.send('hi!');
-            });
-        }
+        peer.on('disconnected', function() {
+            console.log("disconnected");
+        });
 
-        var playerNames = ["Player 1", "Player-2", "Player 3", "Player 4"];
+        peer.on('error', function(err) {
+            console.log("error: ", err.type);
+        });
+
+        var playerNames = ["Player 1", "Player 2", "Player 3", "Player 4"];
         // var cards = ["Ella is awesome", "Marty the dancing penguin", "Take hike", "Elephants are small", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22"];
         // var cards = [];
         // sheet url = https://docs.google.com/spreadsheets/d/1wUsvqJyB7QWVy0Ff8Jq4r9F1RfZ2QPsM92IsMwMEWAs/edit?usp=sharing
@@ -186,6 +279,14 @@
                     var card = player.cards[j];
                     var cardContainerDOM = $(player.dom).children(".card-container");
                     var cardDIV = $('<div class="card"></div>').html(card);
+                    cardDIV.click(function(event) {
+                        var card = $(this).html();
+                        console.log(card);
+                        var conn = connections[0];
+                        conn.send({
+                            strings: card
+                        });
+                    });
                     cardContainerDOM.append(cardDIV);
                 }
                 // $.ajax({

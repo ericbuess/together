@@ -44,11 +44,11 @@
         </div>
         <button type="submit" id="game-form-submit" class="btn btn-primary disabled">Join Game</button>
     </form>
-    <button type="button" id="video" class="btn btn-primary disabled">Video</button>
+    <!-- <button type="button" id="video" class="btn btn-primary disabled">Video</button> -->
     <!-- <div id="" -->
     <div id="question"></div>
     <div id="answers"></div>
-    <video autoplay></video>
+    <!-- <video autoplay></video> -->
     <div id="players"></div>
     
     <!-- Optional JavaScript -->
@@ -63,13 +63,14 @@
  
         const params = new URLSearchParams(window.location.search); 
         const sheetId = params.get("sheetId");
-        // const partnerPeerId = params.get("peerId");
+        const partnerPeerId = params.get("peerId");
         var myPeerId = "";
         // var partnerPeerId = "";
         // var connectionID = "";
         var connectionIds = [];
         var connections = [];
         var partnerIds = [];
+        var authorSession = partnerPeerId ? false : true;
         console.log("sheetId: " + sheetId);
 
         $("#game-form").submit(function(event) {
@@ -105,85 +106,9 @@
             $("#answers").html(player + ": " + answer);
         }
 
-        // async function getMedia(constraints) {
-        //     let stream = null;
-
-        //     try {
-        //         stream = await navigator.mediaDevices.getUserMedia(constraints);
-        //         /* use the stream */
-                
-        //     } catch(err) {
-        //         /* handle the error */
-        //     }
-        // }
-
-        function videoCall(peer) {
-            var peerIdToCall = connections[0].peer;
-            console.log("videoCall: ", peerIdToCall);
-            var constraints = { audio: true, video: true };
-            // var stream = getMedia(constraints).then(function(){
-            //     console.log("got media stream: ", stream);
-            // });
-            navigator.mediaDevices.getUserMedia(constraints)
-            .then(function(stream) {
-                // use the stream //
-                console.log("got media stream: ", stream);
-                var mediaConnection = peer.call(peerIdToCall, stream);
-                mediaConnection.on('stream', function(stream) {
-                    // `stream` is the MediaStream of the remote peer.
-                    // Here you'd add it to an HTML videa/canvas element
-                    console.log("receiving media stream...");
-                    var video = document.querySelector('video');
-                    // insert stream to the video tag
-                    video.srcObject = stream;
-                    video.setAttribute('autoplay', '');
-                    video.setAttribute('muted', '');
-                    video.setAttribute('playsinline', '');
-                    // video.play();
-                    // video.src = window.URL.createObjectURL(stream);
-                });
-            })
-            .catch(function(err) {
-                // handle the error
-                console.log("error getting media stream: ", err);
-            });
-            // Prefer camera resolution nearest to 1280x720.
-// var constraints = { audio: true, video: { width: 1280, height: 720 } }; 
-
-// navigator.mediaDevices.getUserMedia(constraints)
-// .then(function(mediaStream) {
-//   var video = document.querySelector('video');
-//   video.srcObject = mediaStream;
-//   video.onloadedmetadata = function(e) {
-//     video.play();
-//   };
-// })
-// .catch(function(err) { console.log(err.name + ": " + err.message); }); // always check for errors at the end.
-
-            // var mediaConnection = peer.call(peerIdToCall, stream);
-            // var peerId = connections[0].peer
-        }
-
-        function answerCall(peer, mediaConnection) {
-            console.log("answer call: ", peer, mediaConnection);
-            
-            var constraints = { audio: true, video: true };
-            navigator.mediaDevices.getUserMedia(constraints)
-            .then(function(stream) {
-                // use the stream
-                console.log("got media stream: ", stream);
-                mediaConnection.answer(stream);
-
-                console.log("answered call:", stream);
-            })
-            .catch(function(err) {
-                // handle the error
-                console.log("error getting media stream: ", err);
-            });
-        }
-
         function initConnection(conn) {
             var connectionAlreadyEstablished = false;
+
             for (var i=0; i<connections.length; i++) {
                 var connection = connections[i];
                 if (connection.connectionId == conn.connectionId) {
@@ -191,6 +116,7 @@
                     break;
                 }
             }
+
             if (!connectionAlreadyEstablished) {
                 // peer.connect(conn.peer);
                 connections.push(conn);
@@ -229,11 +155,11 @@
             var gameIdDOM = $("#game-id");
             gameIdDOM.html('Game ID: ' + myPeerId);
             $("#game-form-submit").removeClass("disabled");
-            var videoDOM = $("#video");
-            videoDOM.click(function(event) {
-                videoCall(peer);
-            });
-            $("#video").removeClass("disabled");
+            // var videoDOM = $("#video");
+            // videoDOM.click(function(event) {
+            //     videoCall(peer);
+            // });
+            // $("#video").removeClass("disabled");
         });
 
         peer.on('connection', function(conn) {
@@ -245,7 +171,7 @@
 
         peer.on('call', function(mediaConnection) {
             console.log('incoming call: ' + mediaConnection);
-            answerCall(peer, mediaConnection);
+            // answerCall(peer, mediaConnection);
         });
         
         peer.on('close', function() {
@@ -260,7 +186,7 @@
             console.log("error: ", err.type);
         });
 
-        var playerNames = ["Player 1", "Player 2", "Player 3", "Player 4"];
+        var playerNames = ["Jordan", "Eric", "Julie", "Howie"];
         // var cards = ["Ella is awesome", "Marty the dancing penguin", "Take hike", "Elephants are small", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22"];
         // var cards = [];
         // sheet url = https://docs.google.com/spreadsheets/d/1wUsvqJyB7QWVy0Ff8Jq4r9F1RfZ2QPsM92IsMwMEWAs/edit?usp=sharing

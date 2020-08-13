@@ -46,8 +46,11 @@
         </div>
         <button type="submit" id="game-form-submit" class="btn btn-primary disabled">Join Game</button>
     </form>
+    <!-- <button type="button" id="video" class="btn btn-primary disabled">Video</button> -->
     <!-- <div id="" -->
     <div id="question"></div>
+    <div id="answers"></div>
+    <!-- <video autoplay></video> -->
     <div id="players"></div>
     
     <!-- Optional JavaScript -->
@@ -70,6 +73,7 @@
         var connectionIds = [];
         var connections = [];
         var partnerIds = [];
+        var authorSession = partnerPeerId ? false : true;
         console.log("sheetId: " + sheetId);
         $("#game-form").submit(function(event) {
             event.preventDefault();
@@ -100,8 +104,13 @@
             }
         });
 
+        function updateAnswers(player, answer) {
+            $("#answers").html(player + ": " + answer);
+        }
+
         function initConnection(conn) {
             var connectionAlreadyEstablished = false;
+
             for (var i=0; i<connections.length; i++) {
                 var connection = connections[i];
                 if (connection.connectionId == conn.connectionId) {
@@ -109,6 +118,7 @@
                     break;
                 }
             }
+
             if (!connectionAlreadyEstablished) {
                 // peer.connect(conn.peer);
                 connections.push(conn);
@@ -124,6 +134,9 @@
                 conn.on('data', function(data) {
                     // Will print 'hi!'
                     console.log('data received on connection ' + conn.connectionId + ' from peer ' + conn.peer + ': ', data);
+                    var answer = data.answer;
+                    var player = data.player;
+                    updateAnswers(player, answer);
                 });
                 conn.on('close', function() {
                     // Will print 'hi!'
@@ -144,6 +157,11 @@
             var gameIdDOM = $("#game-id");
             gameIdDOM.html('Game ID: ' + myPeerId);
             $("#game-form-submit").removeClass("disabled");
+            // var videoDOM = $("#video");
+            // videoDOM.click(function(event) {
+            //     videoCall(peer);
+            // });
+            // $("#video").removeClass("disabled");
         });
 
         peer.on('connection', function(conn) {
@@ -151,6 +169,11 @@
             // connections.push(conn);
             // peer.connect(conn.peer);
             initConnection(conn);
+        });
+
+        peer.on('call', function(mediaConnection) {
+            console.log('incoming call: ' + mediaConnection);
+            // answerCall(peer, mediaConnection);
         });
         
         peer.on('close', function() {
@@ -165,7 +188,7 @@
             console.log("error: ", err.type);
         });
 
-        var playerNames = ["Player 1", "Player 2", "Player 3", "Player 4"];
+        var playerNames = ["Jordan", "Eric", "Julie", "Howie"];
         // var cards = ["Ella is awesome", "Marty the dancing penguin", "Take hike", "Elephants are small", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22"];
         // var cards = [];
         // sheet url = https://docs.google.com/spreadsheets/d/1wUsvqJyB7QWVy0Ff8Jq4r9F1RfZ2QPsM92IsMwMEWAs/edit?usp=sharing
@@ -286,8 +309,11 @@
                         console.log(card);
                         var conn = connections[0];
                         conn.send({
-                            strings: card
+                            answer: card,
+                            player: player.name
                         });
+                        updateAnswers(player.name, card);
+                        // conn.call()
                     });
                     cardContainerDOM.append(cardDIV);
                 }

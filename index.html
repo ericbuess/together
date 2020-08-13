@@ -11,6 +11,9 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 
     <style>
+    	body, input, .card {
+    		background-color: black !important;
+    	}
         #question {
             font-weight: bold;
             font-size: 2em;
@@ -26,7 +29,6 @@
     <title>Together</title>
   </head>
   <body>
-    <h1>Together!</h1>
     <!-- <div id="game-id"></div> -->
     <form id="game-form">
         <div>
@@ -59,7 +61,8 @@
         'use strict';
  
         const params = new URLSearchParams(window.location.search); 
-        const sheetId = params.get("sheetId");
+        //const sheetId = params.get("sheetId");
+        const sheetId = '1wUsvqJyB7QWVy0Ff8Jq4r9F1RfZ2QPsM92IsMwMEWAs';
         // const partnerPeerId = params.get("peerId");
         var myPeerId = "";
         // var partnerPeerId = "";
@@ -68,7 +71,6 @@
         var connections = [];
         var partnerIds = [];
         console.log("sheetId: " + sheetId);
-
         $("#game-form").submit(function(event) {
             event.preventDefault();
             var partnerPeerId = $("#join-game-id").val();
